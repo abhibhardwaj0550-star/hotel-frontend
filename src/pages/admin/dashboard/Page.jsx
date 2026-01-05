@@ -1,17 +1,26 @@
-import React from "react";
-import Navbar from "../../../components/Header";
-import Sidebar from "../../../components/Sidebar";
-
+import { useOutletContext } from "react-router-dom";
+import AdminHeader from "../../../components/admin/AdminHeader";
+import menuIcon from "../../../assets/menu.png";
 
 const DashboardPage = () => {
-    return (
-        <div className="fixed top-0 left-0 w-full z-50 bg-white border-b">
-            <Navbar />
-            <div className="flex flex-1">
-                <Sidebar />
-                <h2 className="text-2xl p-7 font-bold">Dashboard</h2>
-            </div>
-        </div>
-    )
+  const { setSidebarOpen } = useOutletContext(); // to toggle mobile menu
+
+  return (
+    <div>
+      {/* Dashboard Header */}
+      <AdminHeader
+        title="Dashboard"
+        subtitle="Overview of platform statistics and performance"
+        menuIcon={menuIcon}
+        onMenuClick={() => setSidebarOpen(true)}
+      />
+
+      {/* Dashboard Content */}
+      <div className="bg-white rounded-xl p-6 shadow">
+        Dashboard content goes here
+      </div>
+    </div>
+  );
 };
+
 export default DashboardPage;

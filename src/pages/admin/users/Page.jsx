@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
-import Navbar from "../../../components/Header";
-import Sidebar from "../../../components/Sidebar";
+import { useOutletContext } from "react-router-dom";
+import AdminHeader from "../../../components/admin/AdminHeader";
+import menuIcon from "../../../assets/menu.png";
 
 const UsersPage = () => {
+  const { setSidebarOpen } = useOutletContext(); // mobile sidebar toggle
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -46,80 +49,78 @@ const UsersPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
+    <div className="flex-1 p-6 overflow-x-auto bg-gray-50">
+      {/* Page Header */}
+      <AdminHeader
+        title="Users"
+        subtitle="Manage all registered users of the platform"
+        menuIcon={menuIcon}
+        onMenuClick={() => setSidebarOpen(true)}
+      />
 
-      <div className="flex flex-1 flex-col md:flex-row">
-        <Sidebar />
+      {/* Page Content */}
+      <div className="mt-6">
+        {loading && <p>Loading users...</p>}
+        {error && <p className="text-red-500">{error}</p>}
 
-        <div className="flex-1 p-4 md:p-6 overflow-x-auto">
-          <h2 className="text-2xl font-bold mb-4">All Users</h2>
+        {!loading && !error && (
+          <div className="overflow-x-auto bg-white rounded-xl shadow p-4">
+            <table className="min-w-full border border-gray-200 text-sm md:text-base">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="border px-3 py-2">#</th>
+                  <th className="border px-3 py-2">Name</th>
+                  <th className="border px-3 py-2">Email</th>
+                  <th className="border px-3 py-2">Role</th>
+                  <th className="border px-3 py-2">Created</th>
+                  <th className="border px-3 py-2">Actions</th>
+                </tr>
+              </thead>
 
-          {loading && <p>Loading users...</p>}
-          {error && <p className="text-red-500">{error}</p>}
-
-          {!loading && !error && (
-            <div className="overflow-x-auto">
-              <table className="min-w-full border border-gray-200 shadow rounded-lg text-sm md:text-base">
-                <thead className="bg-gray-100">
+              <tbody>
+                {users.length === 0 ? (
                   <tr>
-                    <th className="border px-3 py-2 text-left">#</th>
-                    <th className="border px-3 py-2 text-left">Name</th>
-                    <th className="border px-3 py-2 text-left">Email</th>
-                    <th className="border px-3 py-2 text-left">Role</th>
-                    <th className="border px-3 py-2 text-left">Created At</th>
-                    <th className="border px-3 py-2 text-left">Actions</th>
+                    <td colSpan="6" className="text-center py-4">
+                      No users found
+                    </td>
                   </tr>
-                </thead>
-
-                <tbody>
-                  {users.length === 0 ? (
-                    <tr>
-                      <td colSpan="6" className="text-center py-4">
-                        No users found
+                ) : (
+                  users.map((user, index) => (
+                    <tr key={user._id} className="hover:bg-gray-50">
+                      <td className="border px-3 py-2">{index + 1}</td>
+                      <td className="border px-3 py-2">{user.name}</td>
+                      <td className="border px-3 py-2 break-all">{user.email}</td>
+                      <td className="border px-3 py-2">
+                        <span
+                          className={`px-2 py-1 rounded text-xs capitalize ${
+                            user.role === "admin"
+                              ? "bg-red-100 text-red-600"
+                              : "bg-green-100 text-green-600"
+                          }`}
+                        >
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="border px-3 py-2">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="border px-3 py-2">
+                        {user.role !== "admin" && (
+                          <button
+                            onClick={() => handleDelete(user._id)}
+                            className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                          >
+                            Delete
+                          </button>
+                        )}
                       </td>
                     </tr>
-                  ) : (
-                    users.map((user, index) => (
-                      <tr
-                        key={user._id}
-                        className="hover:bg-gray-50 transition duration-150"
-                      >
-                        <td className="border px-3 py-2">{index + 1}</td>
-                        <td className="border px-3 py-2">{user.name}</td>
-                        <td className="border px-3 py-2 break-all">{user.email}</td>
-                        <td className="border px-3 py-2">
-                          <span
-                            className={`px-2 py-1 rounded text-xs md:text-sm capitalize ${
-                              user.role === "admin"
-                                ? "bg-red-100 text-red-600"
-                                : "bg-green-100 text-green-600"
-                            }`}
-                          >
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="border px-3 py-2">
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="border px-3 py-2">
-                          {user.role !== "admin" && (
-                            <button
-                              onClick={() => handleDelete(user._id)}
-                              className="px-2 py-1 bg-red-600 text-white text-xs md:text-sm rounded hover:bg-red-700 transition"
-                            >
-                              Delete
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

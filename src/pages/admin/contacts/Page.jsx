@@ -1,38 +1,45 @@
-import React from "react";
-import Sidebar from "../../../components/Sidebar";
-import Navbar from "../../../components/Header";
+import { useOutletContext } from "react-router-dom";
+import AdminHeader from "../../../components/admin/AdminHeader";
+import menuIcon from "../../../assets/menu.png";
 
 const ContactPage = () => {
+  const { setSidebarOpen } = useOutletContext(); // To toggle mobile sidebar
+
   return (
-      <div className="fixed top-0 left-0 w-full z-50 bg-white border-b">
-    
-      <Navbar />
+    <div>
+      {/* Page Header */}
+      <AdminHeader
+        title="Contact"
+        subtitle="Get in touch with us"
+        menuIcon={menuIcon}
+        onMenuClick={() => setSidebarOpen(true)}
+        rightContent={
+          <button className="bg-white text-[#5457a6] px-4 py-2 rounded-lg text-sm font-medium">
+            Export
+          </button>
+        }
+      />
 
-      <div className="flex flex-1">
-      
-        <Sidebar />
-
-        <div className="flex-1 p-6">
-          <h2 className="text-2xl font-bold mb-4">Contact</h2>
-
-          <form className="space-y-3 max-w-md">
-            <input
-              className="border p-2 w-full"
-              placeholder="Name"
-            />
-            <input
-              className="border p-2 w-full"
-              placeholder="Email"
-            />
-            <textarea
-              className="border p-2 w-full"
-              placeholder="Message"
-            />
-            <button className="bg-blue-600 text-white px-4 py-2 rounded">
-              Submit
-            </button>
-          </form>
-        </div>
+      {/* Page Content */}
+      <div className="bg-white rounded-xl p-6 shadow mt-6 max-w-lg mx-auto">
+        <form className="space-y-3">
+          <input
+            className="border p-2 w-full rounded"
+            placeholder="Name"
+          />
+          <input
+            className="border p-2 w-full rounded"
+            placeholder="Email"
+          />
+          <textarea
+            className="border p-2 w-full rounded"
+            placeholder="Message"
+            rows={4}
+          />
+          <button className="bg-blue-600 text-white px-4 py-2 rounded">
+            Submit
+          </button>
+        </form>
       </div>
     </div>
   );

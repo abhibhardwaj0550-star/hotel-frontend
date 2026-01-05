@@ -23,20 +23,17 @@ export default function Navbar() {
     logout,
   } = useAppContext();
 
-  const role = localStorage.getItem("role"); 
-  const isAdmin = role === "admin";
-
   const navLinkClass = ({ isActive }) =>
     `flex items-center gap-2 pb-1 transition ${
       isActive
-        ? "text-blue-600 border-b-2 border-blue-600"
-        : "text-gray-700 hover:text-blue-600"
+        ? "text-black border-b-2 border-bg-black"
+        : "text-white hover:text-black"
     }`;
 
   return (
     <>
-      {/* ================= NAVBAR ================= */}
-      <nav className="w-full h-16 bg-white shadow-md flex items-center px-6 relative z-50">
+      <nav className="w-full h-16 bg-gradient-to-r from-[#fc815c] via-[#6b6dfd] to-[#1849ea]
+ shadow-md flex items-center px-6 relative z-50">
         {/* Logo */}
         <div className="flex items-center gap-2 select-none">
           <video
@@ -52,56 +49,37 @@ export default function Navbar() {
           </span>
         </div>
 
-        {/* ================= USER NAVBAR ================= */}
-        {!isAdmin && (
-          <>
-            {/* Center Links */}
-            <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex gap-10 font-medium">
-              <NavLink to="/" className={navLinkClass}>
-                <img src={homeIcon} alt="Homes" className="w-5 h-5" />
-                Homes
-              </NavLink>
-              <NavLink to="/services" className={navLinkClass}>
-                <img src={servicesIcon} alt="Services" className="w-5 h-5" />
-                Services
-              </NavLink>
-              <NavLink to="/experiences" className={navLinkClass}>
-                <img src={experienceIcon} alt="Experiences" className="w-5 h-5" />
-                Experiences
-              </NavLink>
-            </div>
+        {/* Center Links */}
+        <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex gap-10 font-medium">
+          <NavLink to="/" className={navLinkClass}>
+            <img src={homeIcon} alt="Homes" className="w-5 h-5" />
+            Homes
+          </NavLink>
+          <NavLink to="/services" className={navLinkClass}>
+            <img src={servicesIcon} alt="Services" className="w-5 h-5" />
+            Services
+          </NavLink>
+          <NavLink to="/experiences" className={navLinkClass}>
+            <img src={experienceIcon} alt="Experiences" className="w-5 h-5" />
+            Experiences
+          </NavLink>
+        </div>
 
-            {/* Menu Icon */}
-            <button
-              onClick={() => setMenuOpen(true)}
-              className="ml-auto relative"
-            >
-              <img src={menuIcon} alt="menu" className="w-8 h-8" />
-              {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {wishlist.length}
-                </span>
-              )}
-            </button>
-          </>
-        )}
-
-        {/* ================= ADMIN NAVBAR ================= */}
-        {isAdmin && isLoggedIn && (
-          <button
-            onClick={() => {
-              logout();
-              navigate("/");
-            }}
-            className="ml-auto px-4 py-2 border border-red-600 text-red-600 rounded-md hover:bg-red-50 transition"
-          >
-            Logout
-          </button>
-        )}
+        {/* Menu Icon */}
+        <button
+          onClick={() => setMenuOpen(true)}
+          className="ml-auto relative"
+        >
+          <img src={menuIcon} alt="menu" className="w-8 h-8" />
+          {wishlist.length > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              {wishlist.length}
+            </span>
+          )}
+        </button>
       </nav>
 
-      {/* ================= USER MENU DROPDOWN ================= */}
-      {!isAdmin && menuOpen && (
+      {menuOpen && (
         <>
           <div
             className="fixed inset-0 bg-black/10 z-40"
@@ -113,7 +91,6 @@ export default function Navbar() {
               <button onClick={() => setMenuOpen(false)}>✕</button>
             </div>
 
-            {/* Mobile Links */}
             <div className="flex flex-col gap-4 text-gray-700 mb-6 md:hidden">
               <NavLink to="/" onClick={() => setMenuOpen(false)}>
                 Homes
@@ -126,7 +103,6 @@ export default function Navbar() {
               </NavLink>
             </div>
 
-            {/* Wishlist */}
             <button
               className="w-full px-3 py-2 border border-blue-600 text-blue-600 rounded-md mb-2"
               onClick={() => {
@@ -141,7 +117,6 @@ export default function Navbar() {
               Wishlist ({wishlist.length})
             </button>
 
-            {/* Login / Logout */}
             <button
               className={`w-full px-3 py-2 border rounded-md ${
                 isLoggedIn
@@ -165,7 +140,6 @@ export default function Navbar() {
         </>
       )}
 
-      {/* ================= AUTH POPUP ================= */}
       <Popup open={showAuthPopup} onClose={() => setShowAuthPopup(false)}>
         {mode === "login" ? <LoginPage /> : <SignupPage />}
       </Popup>

@@ -1,7 +1,6 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
-import Sidebar from "./components/Sidebar";
+import AdminLayout from "./components/AdminLayout";
 import Auth from "./components/Auth";
 
 import DashboardPage from "./pages/admin/dashboard/Page";
@@ -20,54 +19,49 @@ import WishlistPage from "./pages/lists/Wishlist/WishlistPage";
 
 import { AppProvider } from "./pages/lists/context/Appcontext";
 
-/* ---------------- PROTECTED ROUTE ---------------- */
+/* -------- PROTECTED ROUTE -------- */
 const ProtectedRoute = ({ children, role }) => {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
 
-  if (!token) return <Navigate to="/" />; // Redirect to login if not logged in
-  if (role && user?.role !== role) return <Navigate to="/" />; // Role mismatch
+  if (!token) return <Navigate to="/" />;
+  if (role && user?.role !== role) return <Navigate to="/" />;
+
   return children;
 };
 
-/* ---------------- APP ---------------- */
 const App = () => {
   return (
     <AppProvider>
       <Router>
         <Routes>
-          {/* PUBLIC ROUTES */}
+          {/* PUBLIC ROUTES (NO SIDEBAR) */}
           <Route path="/" element={<HomePage />} />
           <Route path="/services" element={<Services />} />
           <Route path="/experiences" element={<Experiences />} />
           <Route path="/login" element={<Auth />} />
-          <Route path="/wishlist" element={<WishlistPage />} /> {/* ✅ Wishlist Route */}
+          <Route path="/wishlist" element={<WishlistPage />} />
 
-          {/* ADMIN DASHBOARD */}
+          {/* ADMIN ROUTES (WITH SIDEBAR) */}
           <Route
             path="/admin"
             element={
               <ProtectedRoute role="admin">
-                <div className="flex h-screen">
-                  <Sidebar />
-                  <div className="flex-1 p-6 overflow-auto">
-                    <DashboardPage />
-                  </div>
-                </div>
+                <AdminLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<DashboardPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="reviews" element={<ReviewsPage />} />
+            <Route path="transactions" element={<TransactionsPage />} />
+            <Route path="content" element={<ContentPage />} />
+            <Route path="contact" element={<ContactPage />} />
+            <Route path="notification" element={<NotificationPage />} />
+            <Route path="dbbackup" element={<DbBackupPage />} />
+          </Route>
 
-          {/* ADMIN SUB-PAGES */}
-          <Route path="/admin/users" element={<ProtectedRoute role="admin"><UsersPage /></ProtectedRoute>} />
-          <Route path="/admin/reviews" element={<ProtectedRoute role="admin"><ReviewsPage /></ProtectedRoute>} />
-          <Route path="/admin/transactions" element={<ProtectedRoute role="admin"><TransactionsPage /></ProtectedRoute>} />
-          <Route path="/admin/content" element={<ProtectedRoute role="admin"><ContentPage /></ProtectedRoute>} />
-          <Route path="/admin/contact" element={<ProtectedRoute role="admin"><ContactPage /></ProtectedRoute>} />
-          <Route path="/admin/notification" element={<ProtectedRoute role="admin"><NotificationPage /></ProtectedRoute>} />
-          <Route path="/admin/dbbackup" element={<ProtectedRoute role="admin"><DbBackupPage /></ProtectedRoute>} />
-
-          {/* CATCH-ALL */}
+          {/* FALLBACK */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>

@@ -1,38 +1,72 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import logoVideo from "../assets/p.mp4";
+import { useAppContext } from "../pages/lists/context/Appcontext";
 
 const Sidebar = () => {
+  const navigate = useNavigate();
+  const { logout } = useAppContext();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
-    <div className="w-64 h-screen bg-gray-900 text-white p-4 flex flex-col">
-      <div>
-        <h1 className="text-xl font-bold mb-6">Admin Panel</h1>
+    <div className="w-52 h-screen bg-gradient-to-br from-[#1d3faa] to-[#fe6a3c] text-white p-3 flex flex-col">
 
-        <NavItem to="/admin" label="Dashboard" />
-        <NavItem to="/admin/users" label="Users" />
-        <NavItem to="/admin/reviews" label="Reviews" />
-        <NavItem to="/admin/transactions" label="Transactions" />
-        <NavItem to="/admin/content" label="Content Management" />
-        <NavItem to="/admin/contact" label="Contact" />
-        <NavItem to="/admin/notification" label="Notifications" />
-        <NavItem to="/admin/dbbackup" label="DB Backup" />
+      {/* Logo */}
+      <div>
+        <div className="flex items-center gap-2 select-none mb-4 bg-white rounded-xl px-3 py-2">
+          <video
+            src={logoVideo}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-6 h-6 rounded-full object-cover"
+          />
+          <span className="text-xs font-semibold text-blue-700">
+            PrimeStay Inn
+          </span>
+        </div>
+
+        <NavItem to="/admin" icon="🛖" label="Dashboard" />
+        <NavItem to="/admin/users" icon="👤" label="Users" />
+        <NavItem to="/admin/reviews" icon="💫" label="Reviews" />
+        <NavItem to="/admin/transactions" icon="💲" label="Transactions" />
+        <NavItem to="/admin/content" icon="🧑‍💼" label="Content Management" />
+        <NavItem to="/admin/contact" icon="📞" label="Contact" />
+        <NavItem to="/admin/notification" icon="🔔" label="Notifications" />
+        <NavItem to="/admin/dbbackup" icon="👁️‍🗨️" label="DB Backup" />
       </div>
 
- 
+      {/* Logout */}
+      <button
+        onClick={handleLogout}
+        className="mt-auto w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-white text-blue-700 text-xs font-semibold hover:bg-blue-50 transition cursor-pointer"
+      >
+        <span className="text-sm">⬅️</span>
+        <span>Logout</span>
+      </button>
     </div>
   );
 };
 
-const NavItem = ({ to, label }) => (
+const NavItem = ({ to, icon, label }) => (
   <NavLink
     to={to}
+    end
     className={({ isActive }) =>
-      `block px-4 py-2 mb-2 rounded ${
-        isActive ? "bg-gray-700" : "hover:bg-gray-800"
+      `flex items-center gap-2 px-4 py-1.5 mb-1 rounded-lg text-xs transition ${
+        isActive
+          ? "bg-white text-blue-700 font-semibold"
+          : "text-white/90 hover:bg-white/10"
       }`
     }
   >
-    {label}
+    <span className="text-sm w-4 text-center">{icon}</span>
+    <span className="whitespace-nowrap">{label}</span>
   </NavLink>
 );
 
