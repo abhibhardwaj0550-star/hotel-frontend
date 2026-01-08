@@ -6,7 +6,7 @@ const DashboardPage = () => {
   const { setSidebarOpen } = useOutletContext(); // to toggle mobile menu
 
   return (
-    <div>
+    <div className="flex-1 p-6 overflow-y-auto bg-gray-50">
       {/* Dashboard Header */}
       <AdminHeader
         title="Dashboard"
@@ -17,7 +17,9 @@ const DashboardPage = () => {
 
       {/* Dashboard Content */}
       <div className="bg-white rounded-xl p-6 shadow">
-        Dashboard content goes here
+        <p className="text-gray-700">
+          Dashboard content goes here
+        </p>
       </div>
     </div>
   );

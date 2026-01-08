@@ -1,64 +1,75 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ import navigate
 import Navbar from "../../../components/Header";
 import HomeCard from "../../../components/Card";
 import Footer from "../../../components/Footer";
+import Axios from "../../../components/Axios";
 
 const HomePage = () => {
-  const cards = Array.from({ length: 154 });
+  const [hotels, setHotels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); // ✅ initialize navigate
 
-  const getImage = (index) =>
-    index % 2 === 0
-      ? "https://images.unsplash.com/photo-1566073771259-6a8506099945"
-      : "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb";
+  useEffect(() => {
+    const fetchHotels = async () => {
+      try {
+        const res = await Axios.get("/hotel/get");
+        if (res.data.success) {
+          setHotels(res.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch hotels:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHotels();
+  }, []);
+
+  const handleCardClick = (hotelId) => {
+    navigate(`/details/${hotelId}`); // navigate to /details/:id
+  };
 
   return (
     <>
-      {/* FIXED NAVBAR */}
       <div className="fixed top-0 left-0 w-full z-50 bg-white border-b">
         <Navbar />
       </div>
 
-      {/* PAGE CONTENT */}
       <main className="p-10 bg-fffff min-h-screen">
         <div className="max-w[1440px] mx-auto px-6">
-
-          {/* PAGE TITLE */}
-          <div className="mb-6">
-            <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 pt-15">
+          <div className="mb-6 pt-20">
+            <h2 className="text-2xl md:text-3xl font-semibold text-gray-900">
               Popular homes in Sahibzada Ajit Singh Nagar
             </h2>
             <p className="text-sm text-gray-500 mt-1">
-              {cards.length} stays available
+              {loading ? "Loading..." : `${hotels.length} stays available`}
             </p>
           </div>
 
-          {/* GRID LAYOUT */}
-          <div
-            className="
-              grid
-              grid-cols-2
-              sm:grid-cols-3
-              md:grid-cols-4
-              lg:grid-cols-7
-              xl:grid-cols-9
-              gap-x-6
-              gap-y-10
-            "
-          >
-            {cards.map((_, index) => (
-              <HomeCard
-                key={index}
-                image={getImage(index)}
-                title={
-                  index % 2 === 0
-                    ? "Flat in Zirakpur"
-                    : "Apartment in SAS Nagar"
-                }
-                price={`₹${(3000 + index * 10).toLocaleString()} for 2 nights`}
-                rating={(4.8 + (index % 3) * 0.05).toFixed(2)}
-              />
-            ))}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 xl:grid-cols-9 gap-x-6 gap-y-10">
+            {loading
+              ? Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-full h-40 bg-gray-200 animate-pulse rounded-xl"
+                  />
+                ))
+              : hotels.map((hotel) => (
+                  <HomeCard
+                    key={hotel._id}
+                    id={hotel._id}
+                    image={hotel.previewImage}
+                    title={hotel.package}
+                    price={`₹${hotel.rate.toLocaleString()} for 2 nights`}
+                    rating={hotel.rating.toFixed(1)}
+                    nights="2 nights"
+                    onClick={() => handleCardClick(hotel._id)} // ✅ click handler
+                  />
+                ))}
           </div>
+
           <Footer />
         </div>
       </main>

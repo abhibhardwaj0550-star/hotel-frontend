@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAppContext } from "../../../pages/lists/context/Appcontext.jsx"; // Adjust path if needed
+import { useAppContext } from "../../../pages/lists/context/Appcontext.jsx"; 
 import api from "../../../components/Axios.jsx";
 
 const LoginPage = () => {
@@ -10,7 +10,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { login } = useAppContext(); // use context login function
+  const { login } = useAppContext(); 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -21,13 +21,11 @@ const LoginPage = () => {
       setLoading(true);
 
       const res = await api.post("/login", { email, password });
-      console.log(res,"====")
       const { token, user } = res.data;
 
-      // Use context login function to store token & update state
       login(token);
-      localStorage.setItem("user", JSON.stringify(user)); // Optional: keep user info
-      localStorage.setItem("role",  res.data.user.role); // Optional: keep user info
+      localStorage.setItem("user", JSON.stringify(user)); 
+      localStorage.setItem("role",  res.data.user.role); 
      
 
       // Redirect based on role

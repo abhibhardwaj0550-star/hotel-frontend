@@ -2,29 +2,51 @@ import { Heart } from "lucide-react";
 import { useAppContext } from "../pages/lists/context/Appcontext";
 import { useNavigate } from "react-router-dom";
 
-export default function HomeCard({ id, image, title, price = "₹5,000", rating = "4.9", nights = "2 nights" }) {
+export default function HomeCard({ id, image, title, price, rating, nights }) {
   const { toggleWishlist, isWishlisted, isLoggedIn, setShowAuthPopup } = useAppContext();
   const liked = isWishlisted(id);
   const navigate = useNavigate();
 
+  // Convert price to number safely
+  const numericPrice = typeof price === "number"
+    ? price
+    : parseInt(String(price).replace(/\D/g, '')) || 0;
+
+  const displayPrice = typeof price === "number"
+    ? `₹${price.toLocaleString()} for ${nights}`
+    : price; // use original string if already formatted
+
   const handleHeartClick = (e) => {
-    e.stopPropagation();
+    e.stopPropagation(); // prevent card click navigation
 
     if (!isLoggedIn) {
       setShowAuthPopup(true);
       return;
     }
 
-    toggleWishlist({ id, image, title, price, rating, nights });
+    toggleWishlist({
+      _id: id,
+      previewImage: image,
+      package: title,
+      rate: numericPrice,
+      rating,
+      nights,
+    });
 
-    // Navigate to wishlist if adding first time
     if (!liked) {
       navigate("/wishlist");
     }
   };
 
+  const handleCardClick = () => {
+    navigate(`/details/${id}`); // navigate to details page
+  };
+
   return (
-    <div className="cursor-pointer w-full max-w-[230px]">
+    <div
+      className="cursor-pointer w-full max-w-[230px] hover:shadow-lg transition rounded-xl"
+      onClick={handleCardClick} // card click
+    >
       <div className="relative">
         <img
           src={image}
@@ -53,7 +75,9 @@ export default function HomeCard({ id, image, title, price = "₹5,000", rating 
           </span>
         </div>
         <p className="text-[12px] text-gray-500 leading-tight">{nights}</p>
-        <p className="text-[13px] font-semibold text-gray-900 leading-tight">{price}</p>
+        <p className="text-[13px] font-semibold text-gray-900 leading-tight">
+          {displayPrice}
+        </p>
       </div>
     </div>
   );

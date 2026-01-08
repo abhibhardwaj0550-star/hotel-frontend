@@ -1,24 +1,22 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import SignupPage from "../pages/auth/Signup/Page";
-import LoginPage from "../pages/auth/login/Page";
 import menuIcon from "../assets/menu.png";
 import homeIcon from "../assets/home.png";
 import servicesIcon from "../assets/services.png";
 import experienceIcon from "../assets/experience.png";
 import logoVideo from "../assets/p.mp4";
 import Popup from "./Popup";
+import Auth from "./Auth"; // import the new Auth component
 import { useAppContext } from "../pages/lists/context/Appcontext";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [mode, setMode] = useState("login");
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
 
   const {
     wishlist,
-    showAuthPopup,
-    setShowAuthPopup,
     isLoggedIn,
     logout,
   } = useAppContext();
@@ -44,9 +42,7 @@ export default function Navbar() {
             playsInline
             className="w-9 h-9 rounded-full object-cover"
           />
-          <span className="text-xl font-bold text-blue-600">
-            PrimeStay Inn
-          </span>
+          <span className="text-xl font-bold text-blue-600">PrimeStay Inn</span>
         </div>
 
         {/* Center Links */}
@@ -66,10 +62,7 @@ export default function Navbar() {
         </div>
 
         {/* Menu Icon */}
-        <button
-          onClick={() => setMenuOpen(true)}
-          className="ml-auto relative"
-        >
+        <button onClick={() => setMenuOpen(true)} className="ml-auto relative">
           <img src={menuIcon} alt="menu" className="w-8 h-8" />
           {wishlist.length > 0 && (
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -85,7 +78,6 @@ export default function Navbar() {
             className="fixed inset-0 bg-black/10 z-40"
             onClick={() => setMenuOpen(false)}
           />
-
           <div className="fixed top-20 right-6 z-50 w-64 bg-white rounded-xl shadow-xl p-5">
             <div className="flex justify-end mb-4">
               <button onClick={() => setMenuOpen(false)}>✕</button>
@@ -103,10 +95,24 @@ export default function Navbar() {
               </NavLink>
             </div>
 
+            {/* PROFILE BUTTON */}
+            {isLoggedIn && (
+              <button
+                className="w-full px-3 py-2 border border-gray-300 text-gray-800 rounded-md mb-2 hover:bg-gray-100"
+                onClick={() => {
+                  navigate("/profile");
+                  setMenuOpen(false);
+                }}
+              >
+                Profile
+              </button>
+            )}
+
             <button
               className="w-full px-3 py-2 border border-blue-600 text-blue-600 rounded-md mb-2"
               onClick={() => {
                 if (!isLoggedIn) {
+                  setAuthMode("login");
                   setShowAuthPopup(true);
                 } else {
                   navigate("/wishlist");
@@ -128,8 +134,8 @@ export default function Navbar() {
                   logout();
                   navigate("/");
                 } else {
+                  setAuthMode("login");
                   setShowAuthPopup(true);
-                  setMode("login");
                 }
                 setMenuOpen(false);
               }}
@@ -140,8 +146,12 @@ export default function Navbar() {
         </>
       )}
 
+      {/* Auth Popup */}
       <Popup open={showAuthPopup} onClose={() => setShowAuthPopup(false)}>
-        {mode === "login" ? <LoginPage /> : <SignupPage />}
+        <Auth
+          initialMode={authMode}
+          onClose={() => setShowAuthPopup(false)}
+        />
       </Popup>
     </>
   );

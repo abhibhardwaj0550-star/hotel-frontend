@@ -6,11 +6,13 @@ import menuIcon from "../../../assets/menu.png";
 import api from "../../../components/Axios";
 
 const ContentDashboard = () => {
-  const { setSidebarOpen } = useOutletContext(); // for mobile menu
+  const { setSidebarOpen } = useOutletContext();
   const [activePage, setActivePage] = useState("table");
   const [message, setMessage] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef(null); // Reference for image file input
+  const [uploadingPreview, setUploadingPreview] = useState(false);
+  const [uploadingMultiple, setUploadingMultiple] = useState(false);
+  const singleImageRef = useRef(null);
+  const multipleImagesRef = useRef(null);
 
   const [formData, setFormData] = useState({
     previewImage: "",
@@ -37,12 +39,12 @@ const ContentDashboard = () => {
     }
   }, [activePage, token]);
 
-  // Trigger image dialog on Ctrl+S
+  // Ctrl+S triggers image selection in create page
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.ctrlKey && e.key.toLowerCase() === "s" && activePage === "create") {
         e.preventDefault();
-        fileInputRef.current?.click();
+        singleImageRef.current?.click();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -53,6 +55,8 @@ const ContentDashboard = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  // Single preview image upload
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -60,42 +64,38 @@ const ContentDashboard = () => {
     const data = new FormData();
     data.append("image", file);
 
-    setUploading(true);
+    setUploadingPreview(true);
     try {
       const res = await api.post("/upload", data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
-
-      // Set the returned URL to your input
       setFormData((prev) => ({ ...prev, previewImage: res.data.url }));
     } catch (err) {
       console.error("Upload failed:", err);
     } finally {
-      setUploading(false);
+      setUploadingPreview(false);
     }
   };
+
+  // Multiple images upload
   const handleMultipleUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
     const data = new FormData();
-    files.forEach((file) => data.append("images", file)); // key must match backend
+    files.forEach((file) => data.append("images", file));
 
-    setUploading(true);
+    setUploadingMultiple(true);
     try {
       const res = await api.post("/upload/bulk", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      // res.data.images contains uploaded URLs
-      const uploadedUrls = res.data.images.map(img => img.url);
-      setFormData(prev => ({ ...prev, images: uploadedUrls }));
+      const uploadedUrls = res.data.images.map((img) => img.url);
+      setFormData((prev) => ({ ...prev, images: uploadedUrls }));
     } catch (err) {
       console.error("Bulk upload failed:", err);
     } finally {
-      setUploading(false);
+      setUploadingMultiple(false);
     }
   };
 
@@ -105,6 +105,7 @@ const ContentDashboard = () => {
       tags: e.target.value.split(",").map((t) => t.trim()),
     }));
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -130,6 +131,7 @@ const ContentDashboard = () => {
   };
 
   const renderPage = () => {
+    // Table view
     if (activePage === "table") {
       return (
         <div className="bg-white rounded-xl shadow p-4 overflow-x-auto">
@@ -165,6 +167,7 @@ const ContentDashboard = () => {
       );
     }
 
+    // Card view
     if (activePage === "card") {
       return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -185,10 +188,9 @@ const ContentDashboard = () => {
       );
     }
 
-    // CREATE PAGE
+    // Create view
     return (
       <div className="bg-white rounded-xl shadow p-6 max-w-4xl mx-auto relative">
-        {/* Back Button */}
         <button
           onClick={() => setActivePage("table")}
           className="absolute top-4 left-4 bg-gray-200 px-3 py-1 rounded hover:bg-gray-300 transition"
@@ -197,6 +199,7 @@ const ContentDashboard = () => {
         </button>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          {/* Package */}
           <div className="flex flex-col">
             <label className="font-medium mb-1">Package</label>
             <select
@@ -212,6 +215,7 @@ const ContentDashboard = () => {
             </select>
           </div>
 
+          {/* Rate */}
           <div className="flex flex-col">
             <label className="font-medium mb-1">Rate</label>
             <input
@@ -225,6 +229,7 @@ const ContentDashboard = () => {
             />
           </div>
 
+          {/* Rating */}
           <div className="flex flex-col">
             <label className="font-medium mb-1">Rating</label>
             <input
@@ -238,6 +243,7 @@ const ContentDashboard = () => {
             />
           </div>
 
+          {/* Tags */}
           <div className="flex flex-col md:col-span-2">
             <label className="font-medium mb-1">Tags</label>
             <input
@@ -248,6 +254,7 @@ const ContentDashboard = () => {
             />
           </div>
 
+          {/* Description */}
           <div className="flex flex-col md:col-span-2">
             <label className="font-medium mb-1">Description</label>
             <textarea
@@ -259,70 +266,98 @@ const ContentDashboard = () => {
               className="border p-2 rounded w-full"
             />
           </div>
-          <div className="flex flex-col gap-4">
-            <div>
-              <label className="font-medium mb-1">Select Image</label>
-              <input type="file" accept="image/*" onChange={handleFileChange} />
-            </div>
 
-            <div className="flex flex-col">
-              <label className="font-medium mb-1">Preview Image URL</label>
-              <input
-                name="previewImage"
-                placeholder="Preview Image URL"
-                value={formData.previewImage}
-                onChange={handleChange}
-                className="border p-2 rounded"
-                required
-              />
-            </div>
-
+          {/* Preview Image */}
+          <div className="flex flex-col gap-2">
+            <label className="font-medium mb-1">Select Preview Image</label>
+            <button
+              type="button"
+              onClick={() => singleImageRef.current?.click()}
+              className="border p-2 rounded bg-gray-100 hover:bg-gray-200 transition w-max"
+            >
+              Select Image
+            </button>
+            <input
+              ref={singleImageRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            {uploadingPreview && !formData.previewImage && (
+              <div className="w-40 h-40 flex items-center justify-center border rounded">
+                <span className="animate-spin border-4 border-gray-300 border-t-gray-500 rounded-full w-6 h-6"></span>
+              </div>
+            )}
             {formData.previewImage && (
-              <div className="mt-2">
-                <label className="font-medium mb-1">Preview:</label>
+              <div className="relative mt-2 w-40 h-40">
                 <img
                   src={formData.previewImage}
                   alt="Preview"
-                  className="w-40 h-40 object-cover border rounded"
+                  className="w-full h-full object-cover border rounded"
                 />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev) => ({ ...prev, previewImage: "" }))
+                  }
+                  className="absolute top-1 right-1 bg-white rounded-full p-1 shadow hover:bg-gray-200 transition"
+                >
+                  ×
+                </button>
               </div>
             )}
-
-            {uploading && <p>Uploading image...</p>}
           </div>
+
+          {/* Multiple Images */}
           <div className="flex flex-col">
-            <label className="font-medium mb-1">Images</label>
+            <label className="font-medium mb-1">Additional Images</label>
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="border p-2 rounded bg-gray-100 hover:bg-gray-200 transition"
+              onClick={() => multipleImagesRef.current?.click()}
+              className="border p-2 rounded bg-gray-100 hover:bg-gray-200 transition w-max mb-2"
             >
               Select Images
             </button>
-
             <input
-              ref={fileInputRef}
+              ref={multipleImagesRef}
               type="file"
               multiple
               accept="image/*"
               onChange={handleMultipleUpload}
               className="hidden"
             />
-
-            {formData.images.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.images.map((img, idx) => (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {uploadingMultiple && formData.images.length === 0 && (
+                <div className="w-20 h-20 flex items-center justify-center border rounded">
+                  <span className="animate-spin border-4 border-gray-300 border-t-gray-500 rounded-full w-4 h-4"></span>
+                </div>
+              )}
+              {formData.images.map((img, idx) => (
+                <div key={idx} className="relative w-20 h-20">
                   <img
-                    key={idx}
                     src={img}
                     alt={`img-${idx}`}
-                    className="w-20 h-20 object-cover rounded"
+                    className="w-full h-full object-cover rounded"
                   />
-                ))}
-              </div>
-            )}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        images: prev.images.filter((_, i) => i !== idx),
+                      }))
+                    }
+                    className="absolute top-0 right-0 bg-white rounded-full p-1 text-sm shadow hover:bg-gray-200 transition"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
+          {/* Submit */}
           <div className="md:col-span-2 flex justify-end">
             <button className="bg-[#5457a6] text-white px-6 py-2 rounded hover:bg-[#3f437a] transition">
               Create Hotel
@@ -362,10 +397,11 @@ const ContentDashboard = () => {
                 <button
                   key={tab}
                   onClick={() => setActivePage(tab)}
-                  className={`px-6 py-3 font-medium ${activePage === tab
-                    ? "border-b-2 border-[#5457a6] text-[#5457a6]"
-                    : "text-gray-500 hover:text-[#5457a6]"
-                    }`}
+                  className={`px-6 py-3 font-medium ${
+                    activePage === tab
+                      ? "border-b-2 border-[#5457a6] text-[#5457a6]"
+                      : "text-gray-500 hover:text-[#5457a6]"
+                  }`}
                 >
                   {tab === "table" ? "Table View" : "Card View"}
                 </button>

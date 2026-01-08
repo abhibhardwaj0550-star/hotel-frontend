@@ -1,54 +1,119 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import Axios from "../../../components/Axios"; 
 
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  // Lazy initialization for isLoggedIn and wishlist
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return !!localStorage.getItem("token"); // true if token exists
+    return !!localStorage.getItem("token");
   });
 
-  const [wishlist, setWishlist] = useState(() => {
-    const savedWishlist = localStorage.getItem("wishlist");
-    return savedWishlist ? JSON.parse(savedWishlist) : [];
-  });
-
+  const [wishlist, setWishlist] = useState([]);
   const [showAuthPopup, setShowAuthPopup] = useState(false);
 
-  // Save wishlist to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem("wishlist", JSON.stringify(wishlist));
-  }, [wishlist]);
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userId = user?._id;
 
-  const login = (token) => {
-    localStorage.setItem("token", token);
-    setIsLoggedIn(true);
-    setShowAuthPopup(false);
+  /* =========================
+     FETCH WISHLIST
+     ========================= */
+  const fetchWishlist = async () => {
+    if (!userId) return;
+
+    try {
+      const res = await Axios.get(`/wishlist/person/${userId}`);
+      setWishlist(res.data);
+    } catch (error) {
+      console.error("Fetch wishlist failed", error);
+    }
   };
 
-  const logout = () => {
-    setIsLoggedIn(false);
-    setWishlist([]);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user")
-    localStorage.removeItem("wishlist");
-    localStorage.removeItem("role");
+  /* =========================
+     ADD TO WISHLIST
+     ========================= */
+  const addToWishlist = async (hotel) => {
+    try {
+      await Axios.post("/wishlist", {
+        personId: userId,
+        name: user?.name || "User",
+        itemId: hotel._id,
+        wishlistItem: hotel.package || hotel.title,
+      });
+
+      fetchWishlist();
+    } catch (error) {
+      console.error("Add wishlist failed", error);
+    }
   };
 
-  const toggleWishlist = (item) => {
+  /* =========================
+     REMOVE FROM WISHLIST
+     ========================= */
+  const removeFromWishlist = async (wishlistId) => {
+    try {
+      await Axios.delete(`/wishlist/${wishlistId}`);
+      fetchWishlist();
+    } catch (error) {
+      console.error("Remove wishlist failed", error);
+    }
+  };
+
+  /* =========================
+     TOGGLE WISHLIST
+     ========================= */
+  const toggleWishlist = async (hotel) => {
     if (!isLoggedIn) {
       setShowAuthPopup(true);
       return;
     }
 
-    setWishlist((prev) =>
-      prev.find((w) => w.id === item.id)
-        ? prev.filter((w) => w.id !== item.id)
-        : [...prev, item]
-    );
+    const existing = wishlist.find((w) => w.itemId?._id === hotel._id);
+
+    if (existing) {
+      await removeFromWishlist(existing._id);
+    } else {
+      await addToWishlist(hotel);
+    }
   };
 
-  const isWishlisted = (id) => wishlist.some((item) => item.id === id);
+  /* =========================
+     CHECK IF WISHLISTED
+     ========================= */
+  const isWishlisted = (hotelId) =>
+    wishlist.some((w) => w.itemId?._id === hotelId);
+
+  /* =========================
+     LOGIN / LOGOUT
+     ========================= */
+  const login = (token, userData) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
+    setIsLoggedIn(true);
+    setShowAuthPopup(false);
+    fetchWishlist();
+  };
+   const register = (token, userData) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
+    setIsLoggedIn(true);
+    setShowAuthPopup(false);
+    fetchWishlist();
+  };
+
+  const logout = () => {
+    setIsLoggedIn(false);
+    setWishlist([]);
+    localStorage.clear();
+  };
+
+  /* =========================
+     AUTO FETCH ON LOGIN
+     ========================= */
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchWishlist();
+    }
+  }, [isLoggedIn]);
 
   return (
     <AppContext.Provider
@@ -58,9 +123,11 @@ export const AppProvider = ({ children }) => {
         showAuthPopup,
         setShowAuthPopup,
         login,
+        register,
         logout,
         toggleWishlist,
         isWishlisted,
+        fetchWishlist,
       }}
     >
       {children}

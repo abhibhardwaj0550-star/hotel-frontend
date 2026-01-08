@@ -16,6 +16,8 @@ import HomePage from "./pages/lists/home/HomePage";
 import Services from "./pages/lists/Services/Services";
 import Experiences from "./pages/lists/Experiences/Experiences";
 import WishlistPage from "./pages/lists/Wishlist/WishlistPage";
+import DetailsPage from "./pages/lists/detail/Details";
+import ProfilePage from "./pages/lists/profile/ProfilePage"; 
 
 import { AppProvider } from "./pages/lists/context/Appcontext";
 
@@ -35,14 +37,27 @@ const App = () => {
     <AppProvider>
       <Router>
         <Routes>
-          {/* PUBLIC ROUTES (NO SIDEBAR) */}
+          {/* PUBLIC ROUTES */}
           <Route path="/" element={<HomePage />} />
           <Route path="/services" element={<Services />} />
           <Route path="/experiences" element={<Experiences />} />
           <Route path="/login" element={<Auth />} />
           <Route path="/wishlist" element={<WishlistPage />} />
 
-          {/* ADMIN ROUTES (WITH SIDEBAR) */}
+          {/* DETAILS PAGE */}
+          <Route path="/details/:id" element={<DetailsPage />} />
+
+          {/* ✅ PROFILE PAGE (PROTECTED) */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ADMIN ROUTES */}
           <Route
             path="/admin"
             element={

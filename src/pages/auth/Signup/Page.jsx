@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import api from "../../../components/Axios.jsx";
 import { useNavigate } from "react-router-dom";
+import { useAppContext } from "../../lists/context/Appcontext.jsx";
 
 const SignupPage = () => {
   const [name, setName] = useState("");
@@ -11,6 +12,7 @@ const SignupPage = () => {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
+  const { register } = useAppContext(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,6 +21,9 @@ const SignupPage = () => {
     try {
       setLoading(true);
       const res = await api.post("/signup", { name, email, password });
+      const { token } = res.data;
+
+      register(token)
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));

@@ -5,24 +5,24 @@ import HomeCard from "../../../components/Card";
 import Navbar from "../../../components/Header";
 
 const WishlistPage = () => {
-  const { wishlist, isLoggedIn } = useAppContext();
+  const { wishlist, isLoggedIn, fetchWishlist } = useAppContext();
   const navigate = useNavigate();
 
   // Redirect if not logged in
   useEffect(() => {
     if (!isLoggedIn) {
       navigate("/login");
+    } else {
+      fetchWishlist(); // get wishlist from backend
     }
   }, [isLoggedIn, navigate]);
 
   if (!isLoggedIn) return null;
 
-  if (wishlist.length === 0) {
+  if (!wishlist || wishlist.length === 0) {
     return (
       <>
-        <div className="fixed top-0 left-0 w-full z-50 bg-white border-b">
-          <Navbar />
-        </div>
+        <Navbar />
         <p className="text-center mt-24 text-gray-500">
           No items in your wishlist.
         </p>
@@ -32,13 +32,19 @@ const WishlistPage = () => {
 
   return (
     <>
-      <div className="fixed top-0 left-0 w-full z-50 bg-white border-b">
-        <Navbar />
-      </div>
+      <Navbar />
 
       <div className="pt-24 p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-        {wishlist.map((item) => (
-          <HomeCard key={item.id} {...item} />
+        {wishlist.map((wish) => (
+          <HomeCard
+            key={wish._id}
+            id={wish.itemId?._id}
+            image={wish.itemId?.previewImage}
+            title={wish.wishlistItem}
+            rating={wish.itemId?.rating}
+            price={wish.itemId?.rate}
+            packageType={wish.itemId?.package}
+          />
         ))}
       </div>
     </>

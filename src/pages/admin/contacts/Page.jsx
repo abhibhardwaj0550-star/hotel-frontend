@@ -6,18 +6,13 @@ const ContactPage = () => {
   const { setSidebarOpen } = useOutletContext(); // To toggle mobile sidebar
 
   return (
-    <div>
+    <div className="flex-1 p-6 overflow-y-auto bg-gray-50">
       {/* Page Header */}
       <AdminHeader
         title="Contact"
         subtitle="Get in touch with us"
         menuIcon={menuIcon}
         onMenuClick={() => setSidebarOpen(true)}
-        rightContent={
-          <button className="bg-white text-[#5457a6] px-4 py-2 rounded-lg text-sm font-medium">
-            Export
-          </button>
-        }
       />
 
       {/* Page Content */}
